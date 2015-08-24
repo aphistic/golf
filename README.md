@@ -36,7 +36,7 @@ Golf can also be installed the standard way as well
 Examples
 ========
 
-For brevity a lot of error checking has been omitted, be sure you do your checks!
+For brevity a lot of error checking has been omitted from these examples, be sure you do your checks!
 
 The standard way to implement the golf library is by creating a Client, connecting to a server and creating Loggers off that Client:
 
