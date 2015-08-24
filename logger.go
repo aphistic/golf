@@ -9,13 +9,18 @@ type Logger struct {
 	attrs map[string]interface{}
 }
 
+func newLogger() *Logger {
+	log := &Logger{
+		attrs: make(map[string]interface{}, 0),
+	}
+	return log
+}
+
 // Create a new Logger associated with the Client.  Any messages logged with
 // this Logger (and any Logger cloned from this) will be sent to Client.
 func (c *Client) NewLogger() (*Logger, error) {
-	log := &Logger{
-		client: c,
-		attrs:  make(map[string]interface{}, 0),
-	}
+	log := newLogger()
+	log.client = c
 
 	return log, nil
 }

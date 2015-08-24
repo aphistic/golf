@@ -34,9 +34,11 @@ func generateMsgJson(msg *Message) (string, error) {
 	ts := float64(msg.Timestamp.UnixNano()) * float64(0.000000001)
 	obj["timestamp"] = newJsonFloat(ts)
 
-	// First add all the logger level attrs
-	for attrName, attrVal := range msg.logger.attrs {
-		obj[fmt.Sprintf("_%v", attrName)] = attrVal
+	// First add all the logger level attrs if it exists
+	if msg.logger != nil {
+		for attrName, attrVal := range msg.logger.attrs {
+			obj[fmt.Sprintf("_%v", attrName)] = attrVal
+		}
 	}
 
 	// Next add all the message level attrs. Those override

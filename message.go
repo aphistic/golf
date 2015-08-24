@@ -34,11 +34,20 @@ type Message struct {
 // will use the attributes associated with the Logger it was created from in addition
 // to its own
 func (l *Logger) NewMessage() *Message {
-	msg := &Message{
-		logger: l,
+	msg := newMessage()
+	msg.logger = l
+	msg.Hostname = l.client.hostname
+	return msg
+}
 
-		version:  "1.1",
-		Hostname: l.client.hostname,
+func newMessage() *Message {
+	return newMessageForVersion("1.1")
+}
+func newMessageForVersion(version string) *Message {
+	msg := &Message{
+		version: version,
+
+		Attrs: make(map[string]interface{}, 0),
 	}
 	return msg
 }
