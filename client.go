@@ -181,7 +181,10 @@ func (c *Client) msgSender() {
 }
 
 func (c *Client) writeMsg(data string, w io.Writer, compression int) error {
-	chnk := newChunker(w, 1420)
+	chnk, err := newChunker(w, c.config.ChunkSize)
+	if err != nil {
+		return err
+	}
 	defer chnk.Flush()
 
 	switch compression {

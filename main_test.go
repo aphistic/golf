@@ -57,3 +57,26 @@ func Example_defaultLogger() {
 	}()
 	<-wait
 }
+
+type testWriter struct {
+	Written [][]byte
+}
+
+func newTestWriter() *testWriter {
+	return &testWriter{
+		Written: make([][]byte, 0),
+	}
+}
+func (tw *testWriter) reset() {
+	tw.Written = make([][]byte, 0)
+}
+func (tw *testWriter) Write(p []byte) (int, error) {
+	// Need to copy it because of the way the chunker reuses the
+	// write buffer.  That may be a problem at some point in the future...
+	// Need to keep an eye on that.
+	write := make([]byte, len(p))
+	copy(write, p)
+	tw.Written = append(tw.Written, write)
+
+	return len(p), nil
+}
