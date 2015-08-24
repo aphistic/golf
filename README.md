@@ -1,6 +1,7 @@
 golf
 ====
 [![GoDoc](https://godoc.org/github.com/aphistic/golf?status.svg)](https://godoc.org/github.com/aphistic/golf)
+[![Build Status](https://travis-ci.org/aphistic/golf.svg?branch=master)](https://travis-ci.org/aphistic/golf)
 
 Golf is an MIT-licensed Go client library for servers supporting the Graylog
 Extended Log Format (GELF, https://www.graylog.org/resources/gelf-2/).
