@@ -37,7 +37,8 @@ func (c *chunker) Write(p []byte) (int, error) {
 
 func (c *chunker) Flush() error {
 	idFull := uuid.NewV4()
-	return c.flushWithId(idFull.Bytes())
+	err := c.flushWithId(idFull.Bytes()[0:8])
+	return err
 }
 
 func (c *chunker) flushWithId(id []byte) error {

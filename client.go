@@ -28,8 +28,9 @@ type Client struct {
 	queue      []*Message
 	queueMutex sync.Mutex
 
-	msgChan chan *Message
-	ctlChan chan int
+	msgChan  chan *Message
+	queueCtl chan int
+	sendCtl  chan int
 
 	config ClientConfig
 }
@@ -59,10 +60,12 @@ func NewClient() (*Client, error) {
 // Create a new Client instance with the given ClientConfig
 func NewClientWithConfig(config ClientConfig) (*Client, error) {
 	c := &Client{
-		queue: make([]*Message, 0),
+		config: config,
+		queue:  make([]*Message, 0),
 
-		msgChan: make(chan *Message, 500),
-		ctlChan: make(chan int),
+		msgChan:  make(chan *Message, 500),
+		queueCtl: make(chan int),
+		sendCtl:  make(chan int),
 	}
 
 	host, err := os.Hostname()
@@ -104,15 +107,35 @@ func (c *Client) Dial(uri string) error {
 	return nil
 }
 
-// Close the connection to the server
+// Close the connection to the server. This call will block until all the
+// currently queued messages for the client are sent.
 func (c *Client) Close() error {
+	// First quit the queue and wait for it to respond
+	// that it's quit
+	c.queueCtl <- 1
+	for {
+		quitVal := <-c.queueCtl
+		if quitVal == 2 {
+			break
+		}
+		c.queueCtl <- quitVal
+	}
+
+	// Then quit the sender and wait for it to respond
+	// that it's quit
+	c.sendCtl <- 1
+	for {
+		quitVal := <-c.sendCtl
+		if quitVal == 2 {
+			break
+		}
+		c.sendCtl <- quitVal
+	}
+
 	err := c.conn.Close()
 	if err != nil {
 		return err
 	}
-
-	c.ctlChan <- 1
-
 	c.conn = nil
 
 	return nil
@@ -125,13 +148,8 @@ func (c *Client) QueueMsg(msg *Message) error {
 		msg.Timestamp = &curTime
 	}
 
-	// Non-blocking channel send
-	select {
-	case c.msgChan <- msg:
-		return nil
-	default:
-		return errors.New("Unable to queue message")
-	}
+	c.msgChan <- msg
+	return nil
 }
 
 func (c *Client) queueReceiver() {
@@ -141,9 +159,17 @@ func (c *Client) queueReceiver() {
 			c.queueMutex.Lock()
 			c.queue = append(c.queue, msg)
 			c.queueMutex.Unlock()
-		case <-c.ctlChan:
-			c.ctlChan <- 1
-			return
+		case quitVal := <-c.queueCtl:
+			if quitVal == 1 {
+				// Don't quit if there are still
+				// messages in the channel
+				if len(c.msgChan) > 0 {
+					c.queueCtl <- 1
+					continue
+				}
+				c.queueCtl <- 2
+				return
+			}
 		}
 	}
 }
@@ -160,22 +186,29 @@ func (c *Client) msgSender() {
 			if err != nil {
 				// TODO Not sure what to do at this point? Fail the
 				// message silently?
+				// Might be able to add an error channel that the
+				// user can watch for errors
 				continue
 			}
 			err = c.writeMsg(data, c.conn, COMP_GZIP)
 			if err != nil {
 				// TODO Same as above...
 			}
-
-			//time.Sleep(1 * time.Microsecond)
 		} else {
 			time.Sleep(1 * time.Second)
-		}
 
-		select {
-		case <-c.ctlChan:
-			return
-		default:
+			select {
+			case quitVal := <-c.sendCtl:
+				if quitVal == 1 {
+					if len(c.queue) > 0 {
+						c.sendCtl <- 1
+						continue
+					}
+					c.sendCtl <- 2
+					return
+				}
+			default:
+			}
 		}
 	}
 }
