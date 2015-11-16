@@ -110,6 +110,11 @@ func (c *Client) Dial(uri string) error {
 // Close the connection to the server. This call will block until all the
 // currently queued messages for the client are sent.
 func (c *Client) Close() error {
+	if c.conn == nil {
+		// Already shut down so it doesn't need to run again
+		return nil
+	}
+
 	// First quit the queue and wait for it to respond
 	// that it's quit
 	c.queueCtl <- 1
