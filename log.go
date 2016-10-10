@@ -4,15 +4,24 @@ import (
 	"fmt"
 )
 
-func (l *Logger) logMsg(attrs map[string]interface{}, level int, msg string, va ...interface{}) error {
+func (l *Logger) genMsg(attrs map[string]interface{}, level int, msg string, va ...interface{}) *Message {
 	newMsg := l.NewMessage()
 	newMsg.Level = level
-	newMsg.ShortMessage = fmt.Sprintf(msg, va...)
+	if len(va) > 0 {
+		newMsg.ShortMessage = fmt.Sprintf(msg, va...)
+	} else {
+		newMsg.ShortMessage = msg
+	}
 	newMsg.Attrs = attrs
+	return newMsg
+}
+
+func (l *Logger) logMsg(attrs map[string]interface{}, level int, msg string, va ...interface{}) error {
+	newMsg := l.genMsg(attrs, level, msg, va...)
 	return l.client.QueueMsg(newMsg)
 }
 
-// Log a message 'msg' at LEVEL_DBG level
+// Dbg logs message 'msg' at LEVEL_DBG level
 func (l *Logger) Dbg(msg string) error {
 	return l.logMsg(nil, LEVEL_DBG, msg)
 }

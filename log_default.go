@@ -13,15 +13,24 @@ func DefaultLogger(l *Logger) {
 	defaultLogger = l
 }
 
+func genDefaultMsg(attrs map[string]interface{}, level int, msg string, va ...interface{}) *Message {
+	newMsg := defaultLogger.NewMessage()
+	newMsg.Level = level
+	if len(va) > 0 {
+		newMsg.ShortMessage = fmt.Sprintf(msg, va...)
+	} else {
+		newMsg.ShortMessage = msg
+	}
+	newMsg.Attrs = attrs
+	return newMsg
+}
+
 func logDefaultMsg(attrs map[string]interface{}, level int, msg string, va ...interface{}) error {
 	if defaultLogger == nil {
 		return errors.New("A default logger is not set.")
 	}
 
-	newMsg := defaultLogger.NewMessage()
-	newMsg.Level = level
-	newMsg.ShortMessage = fmt.Sprintf(msg, va...)
-	newMsg.Attrs = attrs
+	newMsg := genDefaultMsg(attrs, level, msg, va...)
 	return defaultLogger.client.QueueMsg(newMsg)
 }
 
