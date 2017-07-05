@@ -95,6 +95,15 @@ func (c *Client) Dial(uri string) error {
 		return errors.New("Unsupported scheme provided")
 	}
 
+	switch parsedUri.Query().Get("compress") {
+	case "none":
+		c.config.Compression = COMP_NONE
+	case "zlib":
+		c.config.Compression = COMP_ZLIB
+	case "gzip":
+		c.config.Compression = COMP_GZIP
+	}
+
 	conn, err := net.Dial(parsedUri.Scheme, parsedUri.Host)
 	if err != nil {
 		return err
@@ -195,7 +204,7 @@ func (c *Client) msgSender() {
 				// user can watch for errors
 				continue
 			}
-			err = c.writeMsg(data, c.conn, COMP_GZIP)
+			err = c.writeMsg(data, c.conn, c.config.Compression)
 			if err != nil {
 				// TODO Same as above...
 			}
