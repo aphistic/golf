@@ -105,3 +105,15 @@ func main() {
     c.Close()
 }
 ```
+
+You can use the query parameter "compress" in the Dial URL, with one of the following value:
+
+* none
+* zlib
+* gzip
+
+```
+udp://192.168.30.150?compress=none
+```
+
+Default is gzip compression.
