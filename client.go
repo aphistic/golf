@@ -182,8 +182,8 @@ func (c *Client) queueReceiver() {
 func (c *Client) msgSender() {
 	var msg *Message
 	for {
+		c.queueMutex.Lock()
 		if len(c.queue) > 0 {
-			c.queueMutex.Lock()
 			msg, c.queue = c.queue[0], c.queue[1:]
 			c.queueMutex.Unlock()
 
@@ -200,15 +200,19 @@ func (c *Client) msgSender() {
 				// TODO Same as above...
 			}
 		} else {
+			c.queueMutex.Unlock()
 			time.Sleep(1 * time.Second)
 
 			select {
 			case quitVal := <-c.sendCtl:
 				if quitVal == 1 {
+					c.queueMutex.Lock()
 					if len(c.queue) > 0 {
+						c.queueMutex.Unlock()
 						c.sendCtl <- 1
 						continue
 					}
+					c.queueMutex.Unlock()
 					c.sendCtl <- 2
 					return
 				}
