@@ -2,9 +2,10 @@ package golf
 
 import (
 	"errors"
-	"github.com/satori/go.uuid"
 	"io"
 	"math"
+
+	"github.com/google/uuid"
 )
 
 type chunker struct {
@@ -36,12 +37,16 @@ func (c *chunker) Write(p []byte) (int, error) {
 }
 
 func (c *chunker) Flush() error {
-	idFull, err := uuid.NewV4()
+	idFull, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
 
-	err = c.flushWithId(idFull.Bytes()[0:8])
+	idBytes, err := idFull.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	err = c.flushWithId(idBytes[0:8])
 	return err
 }
 
