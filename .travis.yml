@@ -5,7 +5,6 @@ go:
     - "1.8"
     - "1.9"
     - "1.10"
-    - "tip"
 
 script:
     - go test -coverprofile=coverage.txt -covermode=atomic
