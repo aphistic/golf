@@ -16,7 +16,7 @@ type chunker struct {
 
 func newChunker(w io.Writer, chunkSize int) (*chunker, error) {
 	if chunkSize < 13 {
-		return nil, errors.New("Chunk size must be at least 13.")
+		return nil, ErrChunkTooSmall
 	}
 
 	c := &chunker{

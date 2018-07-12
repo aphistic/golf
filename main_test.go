@@ -1,15 +1,22 @@
 package golf
 
 import (
-	. "gopkg.in/check.v1"
 	"testing"
+
+	"github.com/aphistic/sweet"
+	. "github.com/onsi/gomega"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func TestMain(m *testing.M) {
+	RegisterFailHandler(sweet.GomegaFail)
+
+	sweet.Run(m, func(s *sweet.S) {
+		s.AddSuite(&ChunkerSuite{})
+		s.AddSuite(&GolfSuite{})
+	})
+}
 
 type GolfSuite struct{}
-
-var _ = Suite(&GolfSuite{})
 
 func Example() {
 	c, _ := NewClient()

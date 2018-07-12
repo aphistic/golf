@@ -1,33 +1,38 @@
 package golf
 
 import (
-	. "gopkg.in/check.v1"
 	"time"
+
+	"github.com/aphistic/sweet"
+	. "github.com/onsi/gomega"
 )
 
-func (s *GolfSuite) TestJsonFloatNew(c *C) {
+type JSONSuite struct{}
+
+func (s *JSONSuite) TestJsonFloatNew(t sweet.T) {
 	f := newJsonFloat(12345)
-	c.Check(f.val, Equals, float64(12345))
+
+	Expect(f.val).To(Equal(float64(12345)))
 }
 
-func (s *GolfSuite) TestJsonFloatJson(c *C) {
+func (s *JSONSuite) TestJsonFloatJson(t sweet.T) {
 	f := newJsonFloat(float64(1440387554.671944965))
 
-	c.Check(f.val, Equals, 1440387554.671944965)
+	Expect(f.val).To(Equal(1440387554.671944965))
 
 	json, err := f.MarshalJSON()
-	c.Logf("%v", string(json))
-	c.Check(err, IsNil)
-	c.Check(string(json), Equals, "1440387554.671945")
+	t.Logf("%v", string(json))
+	Expect(err).To(BeNil())
+	Expect(string(json)).To(Equal("1440387554.671945"))
 }
 
-func (s *GolfSuite) TestJsonNoLogger(c *C) {
+func (s *JSONSuite) TestJsonNoLogger(t sweet.T) {
 	msg := newMessage()
 	msg.Level = LEVEL_CRIT
 	msg.Hostname = "hostname"
 
-	t := time.Unix(0, 1440387554671944965)
-	msg.Timestamp = &t
+	ts := time.Unix(0, 1440387554671944965)
+	msg.Timestamp = &ts
 
 	msg.ShortMessage = "short_message"
 	msg.FullMessage = "full_message"
@@ -36,14 +41,14 @@ func (s *GolfSuite) TestJsonNoLogger(c *C) {
 	msg.Attrs["attr2"] = 1234
 
 	json, _ := generateMsgJson(msg)
-	c.Check(json, Equals, `{`+
-		`"_attr1":"val1","_attr2":1234,"full_message":"full_message",`+
-		`"host":"hostname","level":2,"short_message":"short_message",`+
-		`"timestamp":1440387554.671945,"version":"1.1"`+
-		`}`)
+	Expect(json).To(Equal(`{` +
+		`"_attr1":"val1","_attr2":1234,"full_message":"full_message",` +
+		`"host":"hostname","level":2,"short_message":"short_message",` +
+		`"timestamp":1440387554.671945,"version":"1.1"` +
+		`}`))
 }
 
-func (s *GolfSuite) TestJsonWithLogger(c *C) {
+func (s *JSONSuite) TestJsonWithLogger(t sweet.T) {
 	l := newLogger()
 	l.SetAttr("attr1", "notval1")
 	l.SetAttr("attr3", "val3")
@@ -53,8 +58,8 @@ func (s *GolfSuite) TestJsonWithLogger(c *C) {
 	msg.Level = LEVEL_CRIT
 	msg.Hostname = "hostname"
 
-	t := time.Unix(0, 1440387554671944965)
-	msg.Timestamp = &t
+	ts := time.Unix(0, 1440387554671944965)
+	msg.Timestamp = &ts
 
 	msg.ShortMessage = "short_message"
 	msg.FullMessage = "full_message"
@@ -63,10 +68,10 @@ func (s *GolfSuite) TestJsonWithLogger(c *C) {
 	msg.Attrs["attr2"] = 1234
 
 	json, _ := generateMsgJson(msg)
-	c.Check(json, Equals, `{`+
-		`"_attr1":"val1","_attr2":1234,"_attr3":"val3",`+
-		`"full_message":"full_message","host":"hostname","level":2,`+
-		`"short_message":"short_message","timestamp":1440387554.671945,`+
-		`"version":"1.1"`+
-		`}`)
+	Expect(json).To(Equal(`{` +
+		`"_attr1":"val1","_attr2":1234,"_attr3":"val3",` +
+		`"full_message":"full_message","host":"hostname","level":2,` +
+		`"short_message":"short_message","timestamp":1440387554.671945,` +
+		`"version":"1.1"` +
+		`}`))
 }

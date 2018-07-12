@@ -1,39 +1,44 @@
 package golf
 
 import (
-	. "gopkg.in/check.v1"
+	"github.com/aphistic/sweet"
+	. "github.com/onsi/gomega"
 )
 
-func (s *GolfSuite) TestGenDefaultMessageWithFormatNoParams(c *C) {
+func (s *GolfSuite) TestGenDefaultMessageWithFormatNoParams(t sweet.T) {
 	cl, err := NewClient()
-	c.Assert(cl, NotNil)
-	c.Assert(err, IsNil)
+	Expect(err).To(BeNil())
+	Expect(cl).ToNot(BeNil())
+
 	l, err := cl.NewLogger()
-	c.Assert(l, NotNil)
-	c.Assert(err, IsNil)
+	Expect(err).To(BeNil())
+	Expect(l).ToNot(BeNil())
+
 	DefaultLogger(l)
 
 	// Tests to make sure a string won't be double-formatted if
 	// no paramters are passed to the format string
 	msg := genDefaultMsg(nil, 1, "%2b")
-	c.Check(msg.Level, Equals, 1)
-	c.Check(msg.ShortMessage, Equals, "%2b")
-	c.Check(msg.Attrs, IsNil)
+	Expect(msg.Level).To(Equal(1))
+	Expect(msg.ShortMessage).To(Equal("%2b"))
+	Expect(msg.Attrs).To(BeNil())
 }
 
-func (s *GolfSuite) TestGenDefaultMessageWithFormat(c *C) {
+func (s *GolfSuite) TestGenDefaultMessageWithFormat(t sweet.T) {
 	cl, err := NewClient()
-	c.Assert(cl, NotNil)
-	c.Assert(err, IsNil)
+	Expect(err).To(BeNil())
+	Expect(cl).ToNot(BeNil())
+
 	l, err := cl.NewLogger()
-	c.Assert(l, NotNil)
-	c.Assert(err, IsNil)
+	Expect(err).To(BeNil())
+	Expect(l).ToNot(BeNil())
+
 	DefaultLogger(l)
 
 	// Tests to make sure a string will be formatted if
 	// paramters are passed to the format string
 	msg := genDefaultMsg(nil, 1, "%2b", true)
-	c.Check(msg.Level, Equals, 1)
-	c.Check(msg.ShortMessage, Equals, "%!b(bool=true)")
-	c.Check(msg.Attrs, IsNil)
+	Expect(msg.Level).To(Equal(1))
+	Expect(msg.ShortMessage).To(Equal("%!b(bool=true)"))
+	Expect(msg.Attrs).To(BeNil())
 }
